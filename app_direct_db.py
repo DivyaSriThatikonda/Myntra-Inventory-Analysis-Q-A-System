@@ -9,26 +9,25 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
-
 
 # Database connection
 def get_db_connection():
     try:
         conn = pyodbc.connect(
             "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=DESKTOP-HJKD3T7;"
-            "DATABASE=Inventory_Management;"
-            "Trusted_Connection=yes;"
+            f"SERVER={os.getenv('DB_SERVER')};"
+            f"DATABASE={os.getenv('DB_NAME')};"
+            f"UID={os.getenv('DB_USERNAME')};"
+            f"PWD={os.getenv('DB_PASSWORD')};"
         )
         return conn
     except Exception as e:
         logger.error(f"Database connection error: {str(e)}")
         raise
-
 
 # Preprocess query
 def preprocess_query(query):
@@ -40,7 +39,6 @@ def preprocess_query(query):
         if cat in query:
             query = query.replace(cat.lower(), cat)  # Preserve exact category case
     return query
-
 
 # Generate SQL query
 def generate_sql_query(natural_query):
