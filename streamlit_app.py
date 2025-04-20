@@ -13,22 +13,16 @@ load_dotenv()
 # Streamlit page configuration
 st.set_page_config(page_title="Myntra Inventory Analysis", layout="wide")
 
-# Custom CSS for white background and black text with Myntra branding
+# Custom CSS for pastel theme with vibrant peach accents
 st.markdown("""
     <style>
-    /* Single white background for app and sidebar */
-    .stApp, [data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
+    body {
+        background-color: #FFF7F0; /* Pale cream background */
+        color: #2F4F4F; /* Slate text */
     }
-    /* Plotly chart backgrounds */
-    .js-plotly-plot, .plotly, .plot-container, .plotly-graph-div {
-        background-color: #FFFFFF !important;
-    }
-    /* Button styling */
     .stButton>button {
-        background-color: #FF4040; /* Rich coral */
-        color: #FFFFFF;
+        background-color: #FF6666; /* Vibrant peach */
+        color: #2F4F4F;
         border-radius: 10px;
         border: none;
         padding: 12px 24px;
@@ -36,110 +30,38 @@ st.markdown("""
         font-size: 16px;
     }
     .stButton>button:hover {
-        background-color: #E63939; /* Darker coral */
+        background-color: #FF4D4D; /* Darker peach */
+        color: #FFF7F0;
     }
-    /* Text input styling */
     .stTextInput>div>input {
         border-radius: 5px;
-        border: 2px solid #FF4040;
+        border: 2px solid #FF6666; /* Vibrant peach border */
         font-size: 18px;
         padding: 10px;
-        color: #000000;
-        background-color: #F0F0F0; /* Light gray for contrast */
+        color: #2F4F4F;
+        background-color: #FFFFFF;
         text-align: center;
     }
-    /* Selectbox styling */
     .stSelectbox>div {
         border-radius: 5px;
-        border: 1px solid #FF4040;
+        border: 1px solid #FF6666;
         font-size: 16px;
-        color: #000000;
-        background-color: #F0F0F0;
     }
-    /* Container styling */
     .st-container {
-        background-color: #FFFFFF !important;
+        background-color: #FFFFFF;
         border-radius: 10px;
         padding: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        color: #000000;
     }
-    /* Text styling */
-    h1, h2, h3, .stMarkdown, .stTable, [data-testid="stTable"], .query-history, .inventory-heading {
-        color: #000000 !important;
+    h1, h2, h3 {
+        color: #2F4F4F;
         font-weight: bold;
     }
-    /* Enhanced title with prominent Myntra logo */
-    .css-1d391kg { /* Target main title */
-        font-size: 40px !important;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 0;
-    }
-    .css-1d391kg:before {
-        content: url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Myntra_Logo.svg/1200px-Myntra_Logo.svg.png');
-        width: 50px;
-        height: 50px;
-        margin-right: 10px;
-    }
-    .css-1d391kg:after {
-        content: url('https://img.icons8.com/ios-filled/50/000000/t-shirt.png') url('https://img.icons8.com/ios-filled/50/000000/pants.png');
-        width: 100px;
-        height: 50px;
-        margin-left: 10px;
-    }
-    /* Inventory heading */
-    .inventory-heading {
-        font-size: 28px !important;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .inventory-heading:before {
-        content: url('https://img.icons8.com/ios-filled/30/000000/t-shirt.png');
-    }
-    .inventory-heading:after {
-        content: url('https://img.icons8.com/ios-filled/30/000000/pants.png');
-    }
-    /* Query history without red background */
-    .query-history {
-        font-size: 14px;
-        margin-top: 5px;
-        padding: 5px;
-        border-radius: 5px;
-        color: #000000;
-        background-color: transparent; /* Removed red background */
-    }
-    /* Table styling */
-    [data-testid="stTable"] td {
-        background-color: #F0F0F0; /* Light gray table cells */
-        color: #000000 !important;
-        font-weight: bold;
-    }
-    /* SQL code block with box */
-    pre {
-        background-color: transparent !important; /* Removed red background */
-        color: #000000 !important;
-        font-size: 14px !important;
-        padding: 10px;
-        border: 2px solid #000000; /* Added box */
-        border-radius: 10px; /* Rounded corners */
+    .stMarkdown {
+        color: #2F4F4F;
     }
     </style>
 """, unsafe_allow_html=True)
-
-# Custom Plotly theme for white background
-custom_template = {
-    "layout": {
-        "paper_bgcolor": "#FFFFFF",  # White
-        "plot_bgcolor": "#FFFFFF",   # White
-        "font": {"color": "#000000"},  # Black text
-    }
-}
-px.defaults.template = custom_template
 
 # Title
 st.title("Myntra Inventory Analysis Chatbot")
@@ -149,6 +71,9 @@ if 'query_history' not in st.session_state:
     st.session_state.query_history = []
 if 'alerts_run' not in st.session_state:
     st.session_state.alerts_run = False
+if 'restock_run' not in st.session_state:
+    st.session_state.restock_run = False
+
 
 # Database connection
 @st.cache_resource
@@ -177,7 +102,7 @@ def run_query(query, _conn, _cache_key, user_query):
 
 # Sidebar for natural language query
 with st.sidebar:
-    st.markdown('<div class="inventory-heading">Ask About Inventory</div>', unsafe_allow_html=True)
+    st.header("Ask About Inventory")
     user_query = st.text_input("Enter your query (e.g., 'stock of jeans from sangria')", key="user_query",
                                placeholder="Type your inventory question here...")
     if st.button("Run Query"):
@@ -228,7 +153,7 @@ with st.sidebar:
     if st.session_state.query_history:
         st.write("**Query History (Last 5):**")
         for i, (q, sql) in enumerate(st.session_state.query_history, 1):
-            st.markdown(f'<div class="query-history">{i}. {q}</div>', unsafe_allow_html=True)
+            st.write(f"{i}. {q}")
 
     # Reset button
     st.header("Reset State")
